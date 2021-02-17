@@ -48,3 +48,6 @@ daos_vol_tests:  !mux
     test8:
         testname: h5daos_test_oclass
         client_processes: 1
+    test9:
+        testname: h5daos_test_metadata_parallel
+        client_processes: 6
