@@ -18,13 +18,16 @@ add_repo() {
     local gpg_check="${2:-true}"
 
     if [ -n "$repo" ]; then
-        repo="${REPOSITORY_URL}${repo}"
-        if ! dnf repolist | grep "$(url_to_repo "$repo")"; then
-            dnf config-manager --add-repo="${repo}"
+        local repo_url="${REPOSITORY_URL}${repo}"
+        local repo_name
+        repo_name=$(url_to_repo "$repo_url")
+        if ! dnf repolist | grep "$repo_name"; then
+            dnf config-manager --add-repo="${repo_url}" >&2
             if ! $gpg_check; then
-                disable_gpg_check "$repo"
+                disable_gpg_check "$repo" >&2
             fi
         fi
+        echo "$repo_name"
     fi
 }
 

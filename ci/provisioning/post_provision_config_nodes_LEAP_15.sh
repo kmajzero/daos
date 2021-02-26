@@ -1,9 +1,33 @@
 #!/bin/bash
 
-REPOS_DIR=/etc/dnf.repos.d
+REPOS_DIR=/etc/dnf/repos.d
 DISTRO_NAME=leap15
 LSB_RELEASE=lsb-release
 EXCLUDE_UPGRADE=fuse,fuse-libs,fuse-devel,mercury,daos,daos-\*
+DNF_REPO_ARGS="--disablerepo=*"
+
+add_group_repo() {
+    local repo
+    if repo=$(dnf repolist 2>/dev/null | sed -ne '/\([^ ]*daos-stack-ext[^ ]*stable-group[^ ]*\).*/,$ {s//\1/p;q0};$ q1'); then
+        DNF_REPO_ARGS+=" --enablerepo=$repo"
+    else
+        local repo_name
+        repo_name=$(add_repo "$DAOS_STACK_GROUP_REPO")
+        group_repo_post
+        DNF_REPO_ARGS+=" --enablerepo=$repo_name"
+    fi
+}
+
+add_local_repo() {
+    local repo
+    if repo=$(dnf repolist 2>/dev/null | sed -ne '/\([^ ]*daos-stack-[^ ]*-x86_64-stable-local[^ ]*\).*/,$ {s//\1/p;q0};$ q1'); then
+        DNF_REPO_ARGS+=" --enablerepo=$repo"
+    else
+        local repo_name
+        repo_name=$(add_repo "$DAOS_STACK_LOCAL_REPO")
+        DNF_REPO_ARGS+=" --enablerepo=$repo_name"
+    fi
+}
 
 bootstrap_dnf() {
     time zypper --non-interactive install dnf
@@ -24,9 +48,9 @@ distro_custom() {
     fi
 
     # force install of avocado 52.1
-    dnf -y erase avocado{,-common} \
+    time dnf -y erase avocado{,-common} \
            python2-avocado{,-plugins-{output-html,varianter-yaml-to-mux}}
-    dnf -y install {avocado-common,python2-avocado{,-plugins-{output-html,varianter-yaml-to-mux}}}-52.1
+    time dnf -y install {avocado-common,python2-avocado{,-plugins-{output-html,varianter-yaml-to-mux}}}-52.1
 
 }
 
@@ -38,7 +62,7 @@ post_provision_config_nodes() {
 
     if $CONFIG_POWER_ONLY; then
         rm -f $REPOS_DIR/*.hpdd.intel.com_job_daos-stack_job_*_job_*.repo
-        dnf -y erase fio fuse ior-hpc mpich-autoload               \
+        time dnf -y erase fio fuse ior-hpc mpich-autoload               \
                      ompi argobots cart daos daos-client dpdk      \
                      fuse-libs libisa-l libpmemobj mercury mpich   \
                      openpa pmix protobuf-c spdk libfabric libpmem \
@@ -46,15 +70,10 @@ post_provision_config_nodes() {
                      slurm-example-configs slurmctld slurm-slurmmd
     fi
 
-    local dnf_repo_args="--disablerepo=*"
-
-    add_repo "$DAOS_STACK_GROUP_REPO"
-    group_repo_post
-
-    add_repo "${DAOS_STACK_LOCAL_REPO}" false
-
-    # TODO: this should be per repo for the above two repos
-    dnf_repo_args+=" --enablerepo=repo.dc.hpdd.intel.com_repository_*"
+    time dnf repolist
+    add_group_repo
+    add_local_repo
+    time dnf repolist
 
     if [ -n "$INST_REPOS" ]; then
         local repo
@@ -74,21 +93,20 @@ post_provision_config_nodes() {
             disable_gpg_check "$repo_url"
             # TODO: this should be per repo in the above loop
             if [ -n "$INST_REPOS" ]; then
-                dnf_repo_args+=",build.hpdd.intel.com_job_daos-stack*"
+                DNF_REPO_ARGS+=" --enablerepo=build.hpdd.intel.com_job_daos-stack*"
             fi
         done
     fi
     if [ -n "$INST_RPMS" ]; then
         # shellcheck disable=SC2086
-        dnf -y erase $INST_RPMS
+        time dnf -y erase $INST_RPMS
     fi
     rm -f /etc/profile.d/openmpi.sh
     rm -f /tmp/daos_control.log
-    dnf -y install $LSB_RELEASE
-
+    time dnf -y install $LSB_RELEASE
     # shellcheck disable=SC2086
     if [ -n "$INST_RPMS" ] &&
-       ! dnf -y $dnf_repo_args install $INST_RPMS; then
+       ! time dnf -y $DNF_REPO_ARGS install $INST_RPMS; then
         rc=${PIPESTATUS[0]}
         dump_repos
         exit "$rc"
