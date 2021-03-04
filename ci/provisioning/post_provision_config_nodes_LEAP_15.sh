@@ -31,6 +31,8 @@ add_local_repo() {
 
 bootstrap_dnf() {
     time zypper --non-interactive install dnf
+    rm -rf "$REPOS_DIR"
+    ln -s ../zypp/repos.d "$REPOS_DIR"
 }
 
 group_repo_post() {
