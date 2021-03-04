@@ -52,7 +52,10 @@ distro_custom() {
     # force install of avocado 52.1
    # time dnf -y erase avocado{,-common} \
    #        python2-avocado{,-plugins-{output-html,varianter-yaml-to-mux}}
-   rpm -qa | grep avocado
+   time rpm -qa | grep avocado
+   time dnf -y erase avocado-common python2-avocado                \
+                     python2-avocado-plugins-varianter-yaml-to-mux \
+                     python2-avocado-plugins-output-html
    time dnf -y install {avocado-common,python2-avocado{,-plugins-{output-html,varianter-yaml-to-mux}}}
 
 }
