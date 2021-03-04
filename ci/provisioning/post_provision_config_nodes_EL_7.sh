@@ -29,29 +29,6 @@ timeout_yum() {
     return 1
 }
 
-add_group_repo() {
-    local repo
-    if repo=$(dnf repolist 2>/dev/null | sed -ne '/\([^ ]*daos-stack-ext[^ ]*stable-group[^ ]*\).*/,$ {s//\1/p;q0};$ q1'); then
-        DNF_REPO_ARGS+=" --enablerepo=$repo"
-    else
-        local repo_name
-        repo_name=$(add_repo "$DAOS_STACK_GROUP_REPO")
-        group_repo_post
-        DNF_REPO_ARGS+=" --enablerepo=$repo_name"
-    fi
-}
-
-add_local_repo() {
-    local repo
-    if repo=$(dnf repolist 2>/dev/null | sed -ne '/\([^ ]*daos-stack-[^ ]*-x86_64-stable-local[^ ]*\).*/,$ {s//\1/p;q0};$ q1'); then
-        DNF_REPO_ARGS+=" --enablerepo=$repo"
-    else
-        local repo_name
-        repo_name=$(add_repo "$DAOS_STACK_LOCAL_REPO")
-        DNF_REPO_ARGS+=" --enablerepo=$repo_name"
-    fi
-}
-
 bootstrap_dnf() {
     timeout_yum 5m install dnf 'dnf-command(config-manager)'
 }

@@ -6,29 +6,6 @@ LSB_RELEASE=lsb-release
 EXCLUDE_UPGRADE=fuse,fuse-libs,fuse-devel,mercury,daos,daos-\*
 DNF_REPO_ARGS="--disablerepo=*"
 
-add_repo2() {
-    local match="$1"
-    local add_repo="$2"
-
-    local repo
-    if repo=$(dnf repolist 2>/dev/null | sed -ne "/\($match\).*/,\${s//\1/p;q0};\$q1"); then
-        DNF_REPO_ARGS+=" --enablerepo=$repo"
-    else
-        local repo_name
-        repo_name=$(add_repo "$add_repo")
-        DNF_REPO_ARGS+=" --enablerepo=$repo_name"
-    fi
-}
-
-add_group_repo() {
-    add_repo2 '[^ ]*daos-stack-ext[^ ]*stable-group[^ ]*' "$DAOS_STACK_GROUP_REPO"
-    group_repo_post
-}
-
-add_local_repo() {
-    add_repo2 '[^ ]*daos-stack-[^ ]*-x86_64-stable-local[^ ]*' "$DAOS_STACK_LOCAL_REPO"
-}
-
 bootstrap_dnf() {
     time zypper --non-interactive install dnf
     rm -rf "$REPOS_DIR"

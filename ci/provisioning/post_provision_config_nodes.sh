@@ -14,21 +14,37 @@ url_to_repo() {
 }
 
 add_repo() {
-    local repo="$1"
-    local gpg_check="${2:-true}"
+    local match="$1"
+    local add_repo="$2"
+    local gpg_check="${3:-true}"
 
-    if [ -n "$repo" ]; then
-        local repo_url="${REPOSITORY_URL}${repo}"
+    local repo
+    if repo=$(dnf repolist 2>/dev/null |
+              sed -ne "/\($match\).*/,\${s//\1/p;q0};\$q1"); then
+        DNF_REPO_ARGS+=" --enablerepo=$repo"
+    else
+        local repo_url="${REPOSITORY_URL}${add_repo}"
         local repo_name
         repo_name=$(url_to_repo "$repo_url")
         if ! dnf repolist | grep "$repo_name"; then
             dnf config-manager --add-repo="${repo_url}" >&2
             if ! $gpg_check; then
-                disable_gpg_check "$repo" >&2
+                disable_gpg_check "$add_repo" >&2
             fi
         fi
-        echo "$repo_name"
+        DNF_REPO_ARGS+=" --enablerepo=$repo_name"
     fi
+}
+
+add_group_repo() {
+    add_repo '[^ ]*daos-stack-ext[^ ]*stable-group[^ ]*' \
+             "$DAOS_STACK_GROUP_REPO"
+    group_repo_post
+}
+
+add_local_repo() {
+    add_repo '[^ ]*daos-stack-[^ ]*-x86_64-stable-local[^ ]*' \
+             "$DAOS_STACK_LOCAL_REPO" false
 }
 
 disable_gpg_check() {
