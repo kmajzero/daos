@@ -26,17 +26,12 @@ distro_custom() {
                /etc/profile.d/lmod.sh;                                        \
     fi
 
-    # force install of avocado 52.1
-   # time dnf -y erase avocado{,-common} \
-   #        python2-avocado{,-plugins-{output-html,varianter-yaml-to-mux}}
-   time rpm -qa | grep avocado
-   time dnf -y erase avocado-common python2-avocado                \
-                     python2-avocado-plugins-varianter-yaml-to-mux \
-                     python2-avocado-plugins-output-html
-   time dnf -y install {avocado-common,python2-avocado{,-plugins-{output-html,varianter-yaml-to-mux}}}
+    # Upgrade Avocado
+    time dnf config-manager --add-repo \
+             https://build.hpdd.intel.com/job/daos-stack/job/python-avocado/job/PR-3/lastSuccessfulBuild/artifact/artifacts/leap15
+    disable_gpg_check "build.hpdd.intel.com_job_daos-stack_job_python-avocado_job_PR-3_lastSuccessfulBuild_artifact_artifacts_leap15"
 
 }
-
 post_provision_config_nodes() {
     bootstrap_dnf
 

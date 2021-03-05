@@ -47,6 +47,12 @@ distro_custom() {
        [ -e /usr/bin/python3.6 ]; then
         ln -s python3.6 /usr/bin/python3
     fi
+
+    # Upgrade Avocado
+    time dnf config-manager --add-repo \
+             https://build.hpdd.intel.com/job/daos-stack/job/python-avocado/job/PR-3/lastSuccessfulBuild/artifact/artifacts/centos7
+    disable_gpg_check "build.hpdd.intel.com_job_daos-stack_job_python-avocado_job_PR-3_lastSuccessfulBuild_artifact_artifacts_centos7"
+
     # install the debuginfo repo in case we get segfaults
     cat <<"EOF" > $REPOS_DIR/CentOS-Debuginfo.repo
 [core-0-debuginfo]
