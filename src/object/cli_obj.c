@@ -2766,7 +2766,7 @@ shard_list_task_fini(tse_task_t *task, void *arg)
 	shard_arg->la_recxs = NULL;
 	shard_arg->la_kds = NULL;
 	if (shard_arg->la_sgl != NULL && shard_arg->la_sgl != obj_arg->sgl)
-		d_sgl_fini(shard_arg->la_sgl, true);
+		d_sgl_fini(shard_arg->la_sgl, false);
 
 	return 0;
 }

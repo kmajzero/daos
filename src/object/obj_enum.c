@@ -920,7 +920,7 @@ dss_enum_unpack_io_clear(struct dss_enum_unpack_io *io)
 
 	for (i = 0; i <= io->ui_iods_top; i++) {
 		if (io->ui_sgls != NULL)
-			d_sgl_fini(&io->ui_sgls[i], true);
+			d_sgl_fini(&io->ui_sgls[i], false);
 		daos_iov_free(&io->ui_csum_iov);
 
 
@@ -967,7 +967,7 @@ clear_top_iod(struct dss_enum_unpack_io *io)
 		D_DEBUG(DB_IO, "iod without recxs: %d\n", idx);
 
 		if (io->ui_sgls != NULL)
-			d_sgl_fini(&io->ui_sgls[idx], true);
+			d_sgl_fini(&io->ui_sgls[idx], false);
 
 		daos_iov_free(&io->ui_iods[idx].iod_name);
 		D_FREE(io->ui_iods[idx].iod_recxs);

@@ -2700,6 +2700,7 @@ handle_response_internal(void *arg)
 	default:
 		D_ERROR("wrong opc: cb_info %p: rpc %p: opc %#x\n",
 			cb_info, rpc, rpc->cr_opc);
+		D_FREE(cb_info->cci_arg);
 	}
 }
 
