@@ -48,7 +48,7 @@ distro_custom() {
         ln -s python3.6 /usr/bin/python3
     fi
 
-    # Upgrade Avocado
+    # Add Avocado PR
     time dnf config-manager --add-repo \
              https://build.hpdd.intel.com/job/daos-stack/job/python-avocado/job/PR-3/lastSuccessfulBuild/artifact/artifacts/centos7
     disable_gpg_check "build.hpdd.intel.com_job_daos-stack_job_python-avocado_job_PR-3_lastSuccessfulBuild_artifact_artifacts_centos7"
@@ -62,6 +62,14 @@ gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Debug-7
 enabled=0
 EOF
+
+    # hack around https://github.com/daos-stack/python-avocado/blob/a59dcb992fe30d256cdf1adb1b1cfdee3e4431be/python-avocado-EL_7.spec#L350-L352
+    # until we move to python3
+    if [ -e /usr/bin/avocado ]; then
+        echo "Unversioned binary hack needs to be removed from ci/provisioning/post_provision_config_nodes_EL_7.sh"
+        exit 1
+    fi
+    ln -s avocado-2.7 /usr/bin/avocado
 
 }
 
