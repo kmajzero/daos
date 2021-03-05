@@ -892,7 +892,6 @@ dc_array_close(tse_task_t *task)
 	if (rc != 0) {
 		D_ERROR("Failed to register completion cb "DF_RC"\n",
 			DP_RC(rc));
-		array_decref(array);
 		D_GOTO(err_put2, rc);
 	}
 
