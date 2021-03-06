@@ -310,7 +310,8 @@ boolean skip_testing_stage() {
             doc_only_change() ||
             skip_stage('test') ||
             (env.BRANCH_NAME.startsWith('weekly-testing') &&
-             ! startedByTimer())
+             ! startedByTimer() &&
+             ! params.ForceRun)
 }
 
 pipeline {
@@ -339,6 +340,9 @@ pipeline {
         string(name: 'BuildPriority',
                defaultValue: get_priority(),
                description: 'Priority of this build.  DO NOT USE WITHOUT PERMISSION.')
+        booleanParam(name: 'ForceRun',
+                     defaultValue: false,
+                     description: 'Force a run of this job')
     }
 
     stages {
