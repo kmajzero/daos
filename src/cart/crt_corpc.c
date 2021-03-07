@@ -110,7 +110,7 @@ crt_corpc_initiate(struct crt_rpc_priv *rpc_priv)
 		} else {
 			D_ERROR("crt_grp_lookup_grpid: %s failed.\n",
 				co_hdr->coh_grpid);
-			D_GOTO(out, rc = -DER_INVAL);
+			D_GOTO(out, rc = -DER_NONEXIST);
 		}
 	}
 

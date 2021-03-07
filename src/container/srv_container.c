@@ -1635,6 +1635,16 @@ cont_close_recs(crt_context_t ctx, struct cont_svc *svc,
 		rc = cont_iv_capability_invalidate(
 				svc->cs_pool->sp_iv_ns,
 				recs[i].tcr_hdl, CRT_IV_SYNC_EAGER);
+		if (rc == -DER_NONEXIST) {
+			/* If one of rank is being stopped, it may
+			 * return -DER_NONEXIST, which can be ignored
+			 * during capablity invalidate.
+			 */
+			D_DEBUG(DF_DSMS, DF_CONT"/"DF_UUID" fail %d",
+				DP_CONT(svc->cs_pool_uuid, NULL),
+				DP_UUID(recs[i].tcr_hdl), rc);
+			rc = 0;
+		}
 		if (rc)
 			D_GOTO(out, rc);
 	}
