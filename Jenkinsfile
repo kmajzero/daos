@@ -17,7 +17,7 @@
 // Should try to figure this out automatically
 String base_branch = "master"
 // For master, this is just some wildly high number
-String next_version = "1000"
+next_version = "1000"
 
 boolean doc_only_change() {
     if (cachedCommitPragma(pragma: 'Doc-only') == 'true') {
