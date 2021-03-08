@@ -24,8 +24,6 @@
 #include <daos/placement.h>
 #include "srv_internal.h"
 #include "drpc_internal.h"
-#include <gurt/telemetry_common.h>
-#include <gurt/telemetry_producer.h>
 
 #include <daos.h> /* for daos_init() */
 
@@ -460,9 +458,7 @@ static void
 dss_crt_event_cb(d_rank_t rank, enum crt_event_source src,
 		 enum crt_event_type type, void *arg)
 {
-	static struct d_tm_node_t	*dead_rank_cnt;
-	static struct d_tm_node_t	*last_ts;
-	int				 rc = 0;
+	int	 rc = 0;
 
 	/* We only care about dead ranks for now */
 	if (src != CRT_EVS_SWIM || type != CRT_EVT_DEAD) {
@@ -470,9 +466,6 @@ dss_crt_event_cb(d_rank_t rank, enum crt_event_source src,
 			src, type);
 		return;
 	}
-
-	d_tm_increment_counter(&dead_rank_cnt, "events/dead_rank_cnt", NULL);
-	d_tm_record_timestamp(&last_ts, "events/last_event_ts", NULL);
 
 	rc = ds_notify_swim_rank_dead(rank);
 	if (rc)
@@ -494,26 +487,18 @@ server_init(int argc, char *argv[])
 	if (rc != 0)
 		return rc;
 
-	rc = d_tm_init(dss_instance_idx, D_TM_SHARED_MEMORY_SIZE,
-		       D_TM_SERVER_PROCESS);
-	if (rc != 0)
-		goto exit_debug_init;
-
-	/** Report timestamp when engine was started */
-	d_tm_record_timestamp(NULL, "started_at", NULL);
-
 	rc = register_dbtree_classes();
 	if (rc != 0)
-		D_GOTO(exit_telemetry_init, rc);
+		D_GOTO(exit_debug_init, rc);
 
 	/** initialize server topology data */
 	rc = dss_topo_init();
 	if (rc != 0)
-		D_GOTO(exit_telemetry_init, rc);
+		D_GOTO(exit_debug_init, rc);
 
 	rc = abt_init(argc, argv);
 	if (rc != 0)
-		goto exit_telemetry_init;
+		goto exit_debug_init;
 
 	/* initialize the modular interface */
 	rc = dss_module_init();
@@ -639,12 +624,6 @@ server_init(int argc, char *argv[])
 	dss_xstreams_open_barrier();
 	D_INFO("Service fully up\n");
 
-	/** Report timestamp when engine was open for business */
-	d_tm_record_timestamp(NULL, "servicing_at", NULL);
-
-	/** Report rank */
-	d_tm_set_gauge(NULL, dss_self_rank(), "rank", NULL);
-
 	D_PRINT("DAOS I/O Engine (v%s) process %u started on rank %u "
 		"with %u target, %d helper XS, firstcore %d, host %s.\n",
 		DAOS_VERSION, getpid(), dss_self_rank(), dss_tgt_nr,
@@ -676,8 +655,6 @@ exit_mod_init:
 	dss_module_fini(true);
 exit_abt_init:
 	abt_fini();
-exit_telemetry_init:
-	d_tm_fini();
 exit_debug_init:
 	daos_debug_fini();
 	return rc;
@@ -718,8 +695,6 @@ server_fini(bool force)
 	D_INFO("dss_module_fini() done\n");
 	abt_fini();
 	D_INFO("abt_fini() done\n");
-	d_tm_fini();
-	D_INFO("d_tm_fini() done\n");
 	daos_debug_fini();
 	D_INFO("daos_debug_fini() done\n");
 }

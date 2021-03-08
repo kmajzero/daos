@@ -7,7 +7,7 @@
 
 Name:          daos
 Version:       1.1.3
-Release:       4%{?relval}%{?dist}
+Release:       5%{?relval}%{?dist}
 Summary:       DAOS Storage Engine
 
 License:       BSD-2-Clause-Patent
@@ -234,9 +234,8 @@ mkdir -p %{?buildroot}/%{conf_dir}/certs/clients
 mv %{?buildroot}/%{_sysconfdir}/daos/bash_completion.d %{?buildroot}/%{_sysconfdir}
 
 %pre server
-getent group daos_metrics >/dev/null || groupadd -r daos_metrics
 getent group daos_server >/dev/null || groupadd -r daos_server
-getent passwd daos_server >/dev/null || useradd -s /sbin/nologin -r -g daos_server -G daos_metrics daos_server
+getent passwd daos_server >/dev/null || useradd -s /sbin/nologin -r -g daos_server daos_server
 %post server
 /sbin/ldconfig
 %systemd_post %{server_svc_name}
@@ -393,7 +392,6 @@ getent passwd daos_agent >/dev/null || useradd -s /sbin/nologin -r -g daos_agent
 %{_bindir}/daos_gen_io_conf
 %{_bindir}/daos_run_io_conf
 %{_bindir}/crt_launch
-%{_bindir}/daos_metrics
 %{_sysconfdir}/daos/fault-inject-cart.yaml
 %{_bindir}/fault_status
 # For avocado tests
@@ -406,6 +404,9 @@ getent passwd daos_agent >/dev/null || useradd -s /sbin/nologin -r -g daos_agent
 %{_libdir}/*.a
 
 %changelog
+* Mon Mar 08 2021 Michael MacDonald <mjmac.macdonald@intel.com> 1.1.3-5
+- Remove daos_metrics utility from 1.2 release
+
 * Thu Mar 02 2021 Li Wei <wei.g.li@intel.com> 1.1.3-4
 - Require raft-devel 0.7.3 that fixes an unstable leadership problem caused by
   removed replicas as well as some Coverity issues

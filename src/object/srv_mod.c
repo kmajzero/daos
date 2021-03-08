@@ -77,73 +77,12 @@ static void *
 obj_tls_init(int xs_id, int tgt_id)
 {
 	struct obj_tls	*tls;
-	uint32_t	opc;
-	char		*path;
-	int		rc;
 
 	D_ALLOC_PTR(tls);
 	if (tls == NULL)
 		return NULL;
 
 	D_INIT_LIST_HEAD(&tls->ot_pool_list);
-
-	if (tgt_id < 0)
-		/** skip sensor setup on system xstreams */
-		return tls;
-
-	/** register different per-opcode sensors */
-	for (opc = 0; opc < OBJ_PROTO_CLI_COUNT; opc++) {
-		/** Start with latency, of type gauge */
-		D_ASPRINTF(path, "io/%u/ops/%s/latency_us", tgt_id,
-			   obj_opc_to_str(opc));
-		rc = d_tm_add_metric(&tls->ot_op_lat[opc], path, D_TM_GAUGE,
-				     "object RPC processing time", "");
-		if (rc)
-			D_WARN("Failed to create latency sensor: "DF_RC"\n",
-			       DP_RC(rc));
-		D_FREE(path);
-
-		/** Continue with number of active requests, of type gauge */
-		D_ASPRINTF(path, "io/%u/ops/%s/active_cnt", tgt_id,
-			   obj_opc_to_str(opc));
-		rc = d_tm_add_metric(&tls->ot_op_active[opc], path, D_TM_GAUGE,
-				     "number of active object RPCs", "");
-		if (rc)
-			D_WARN("Failed to create active cnt sensor: "DF_RC"\n",
-			       DP_RC(rc));
-		D_FREE(path);
-
-		/** And finally the total number of requests, of type counter */
-		D_ASPRINTF(path, "io/%u/ops/%s/total_cnt", tgt_id,
-			   obj_opc_to_str(opc));
-		rc = d_tm_add_metric(&tls->ot_op_total[opc], path, D_TM_COUNTER,
-				     "total number of processed object RPCs",
-				     "");
-		if (rc)
-			D_WARN("Failed to create total cnt sensor: "DF_RC"\n",
-			       DP_RC(rc));
-		D_FREE(path);
-	}
-
-	/** Total number of silently restarted updates, of type counter */
-	D_ASPRINTF(path, "io/%u/ops/%s/restarted_cnt", tgt_id,
-		   obj_opc_to_str(DAOS_OBJ_RPC_UPDATE));
-	rc = d_tm_add_metric(&tls->ot_update_restart, path, D_TM_COUNTER,
-			     "total number of restarted update ops", "");
-	if (rc)
-		D_WARN("Failed to create restarted cnt sensor: "DF_RC"\n",
-		       DP_RC(rc));
-	D_FREE(path);
-
-	/** Total number of resent updates, of type counter */
-	D_ASPRINTF(path, "io/%u/ops/%s/resent_cnt", tgt_id,
-		   obj_opc_to_str(DAOS_OBJ_RPC_UPDATE));
-	rc = d_tm_add_metric(&tls->ot_update_resent, path, D_TM_COUNTER,
-			     "total number of resent update RPCs", "");
-	if (rc)
-		D_WARN("Failed to create resent cnt sensor: "DF_RC"\n",
-		       DP_RC(rc));
-	D_FREE(path);
 
 	return tls;
 }
