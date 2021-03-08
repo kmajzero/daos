@@ -521,12 +521,16 @@ def get_test_list(tags):
     # Exclude any specified tests that do not match the specified tags.  If no
     # tags and no specific tests have been specified then all of the functional
     # tests will be added.
+    python_version = get_output(['rpm', '--eval', '%python{}_version'.format(
+        version_info.major)]).strip()
+    if python_version.startswith("%python"):
+        print("Failure getting python version.  Is python{{2,3}}-rpm-macros "
+              "installed on {}?".format(socket.gethostname()))
+        exit(1)
     if test_tags or not test_list:
         if not test_list:
             test_list = ["./"]
-        command = ["avocado" + get_output(['rpm', '--eval',
-                                           '%python2_version']), "list",
-                   "--paginator=off"]
+        command = ["avocado-" + python_version, "list", "--paginator=off"]
         for test_tag in test_tags:
             command.append(str(test_tag))
         command.extend(test_list if test_list else ["./"])

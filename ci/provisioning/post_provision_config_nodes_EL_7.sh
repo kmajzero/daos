@@ -4,6 +4,7 @@ REPOS_DIR=/etc/yum.repos.d
 DISTRO_NAME=centos7
 LSB_RELEASE=redhat-lsb-core
 EXCLUDE_UPGRADE=fuse,mercury,daos,daos-\*
+PYTHON_MACROS_RPM="python{2,3}-rpm-macros"
 DNF_REPO_ARGS="--disablerepo=*"
 
 timeout_yum() {
@@ -133,7 +134,7 @@ post_provision_config_nodes() {
     fi
 
     # Install python3 Avocado also
-    if ! time dnf -y install \
+    if ! time dnf -y install "$PYTHON_MACROS_RPM" \
         python{2,3}-avocado{,-plugins-{output-html,varianter-yaml-to-mux}}; then
         dump_repos
         exit 1

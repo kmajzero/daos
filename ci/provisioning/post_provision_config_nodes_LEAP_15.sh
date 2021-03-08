@@ -4,6 +4,7 @@ REPOS_DIR=/etc/dnf/repos.d
 DISTRO_NAME=leap15
 LSB_RELEASE=lsb-release
 EXCLUDE_UPGRADE=fuse,fuse-libs,fuse-devel,mercury,daos,daos-\*
+PYTHON_MACROS_RPM="python-rpm-macros"
 DNF_REPO_ARGS="--disablerepo=*"
 
 bootstrap_dnf() {
@@ -100,7 +101,7 @@ post_provision_config_nodes() {
     fi
 
     # Install python3 Avocado also
-    if ! time dnf -y install \
+    if ! time dnf -y install "$PYTHON_MACROS_RPM" \
         python{2,3}-avocado{,-plugins-{output-html,varianter-yaml-to-mux}}; then
         dump_repos
         exit 1
