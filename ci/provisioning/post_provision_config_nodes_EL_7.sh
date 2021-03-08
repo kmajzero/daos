@@ -4,7 +4,7 @@ REPOS_DIR=/etc/yum.repos.d
 DISTRO_NAME=centos7
 LSB_RELEASE=redhat-lsb-core
 EXCLUDE_UPGRADE=fuse,mercury,daos,daos-\*
-PYTHON_MACROS_RPM="python{2,3}-rpm-macros"
+PYTHON_MACROS_RPM="python2-rpm-macros python3-rpm-macros"
 DNF_REPO_ARGS="--disablerepo=*"
 
 timeout_yum() {
