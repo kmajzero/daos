@@ -132,13 +132,12 @@ post_provision_config_nodes() {
         exit 1
     fi
 
-    # hack around https://github.com/daos-stack/python-avocado/blob/a59dcb992fe30d256cdf1adb1b1cfdee3e4431be/python-avocado-EL_7.spec#L350-L352
-    # until we move to python3
-    if [ -e /usr/bin/avocado ]; then
-        echo "Unversioned binary hack needs to be removed from ci/provisioning/post_provision_config_nodes_EL_7.sh"
+    # Install python3 Avocado also
+    if ! time dnf -y install \
+        python{2,3}-avocado{,-plugins-{output-html,varianter-yaml-to-mux}}; then
+        dump_repos
         exit 1
     fi
-    ln -s avocado-2.7 /usr/bin/avocado
 
     exit 0
 }

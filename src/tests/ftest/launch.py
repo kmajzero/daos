@@ -524,7 +524,9 @@ def get_test_list(tags):
     if test_tags or not test_list:
         if not test_list:
             test_list = ["./"]
-        command = ["avocado", "list", "--paginator=off"]
+        command = ["avocado" + get_output(['rpm', '--eval',
+                                           '%python2_version']), "list",
+                   "--paginator=off"]
         for test_tag in test_tags:
             command.append(str(test_tag))
         command.extend(test_list if test_list else ["./"])
